@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using GerenciadorDeTarefas.Dtos;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -19,9 +21,20 @@ namespace GerenciadorDeTarefas.Controllers
         }
 
         [HttpPost]
-        public IActionResult EfetuarLogin()
+        public IActionResult EfetuarLogin([FromBody] LoginRequisiçaoDto requisicao)
         {
-
-        }
+            try
+            {
+                throw new ArgumentException("Dados obrigatórios não foram enviados");
+            }
+            catch(Exception e)
+            {
+                _logger.LogError("Ocorreu erro ao efetuar login", e, requisicao);
+                return StatusCode(StatusCodes.Status500InternalServerError, new ErroRespostaDto() {
+                Status = StatusCodes.Status500InternalServerError,
+                Erro = "Ocorreu um erro ao efetuar login, tente novamente!"
+                });
+            }
+        }  
     }
 }
