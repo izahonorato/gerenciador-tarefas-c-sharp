@@ -25,11 +25,21 @@ namespace GerenciadorDeTarefas.Controllers
         {
             try
             {
-                throw new ArgumentException("Dados obrigatórios não foram enviados");
+                if(requisicao == null || requisicao.Login == null || requisicao.Senha == null)
+                {
+                    //o usuario passou algo errado
+                    return BadRequest(new ErroRespostaDto()
+                    {
+                        Status = StatusCodes.Status400BadRequest,
+                        Erro = "Parâmetros de entrada inválidos!"
+                    }); 
+                }
+
+                return Ok("Usuário autenticado com sucesso!");
             }
             catch(Exception e)
             {
-                _logger.LogError("Ocorreu erro ao efetuar login", e, requisicao);
+                _logger.LogError($"Ocorreu erro ao efetuar login: {e.Message}", e);
                 return StatusCode(StatusCodes.Status500InternalServerError, new ErroRespostaDto() {
                 Status = StatusCodes.Status500InternalServerError,
                 Erro = "Ocorreu um erro ao efetuar login, tente novamente!"
