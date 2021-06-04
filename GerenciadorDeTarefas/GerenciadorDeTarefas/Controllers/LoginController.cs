@@ -15,6 +15,9 @@ namespace GerenciadorDeTarefas.Controllers
     {
         private readonly ILogger<LoginController> _logger;
 
+        private readonly string loginTeste = "admin@admin.com";
+        private readonly string senhaTeste = "admin1234@";
+
         public LoginController(ILogger<LoginController> logger)
         {
             _logger = logger;
@@ -25,7 +28,10 @@ namespace GerenciadorDeTarefas.Controllers
         {
             try
             {
-                if(requisicao == null || requisicao.Login == null || requisicao.Senha == null)
+                if(requisicao == null || requisicao.Login == null || requisicao.Senha == null || 
+                    string.IsNullOrEmpty(requisicao.Login) || string.IsNullOrWhiteSpace(requisicao.Login) ||
+                    string.IsNullOrEmpty(requisicao.Senha) || string.IsNullOrWhiteSpace(requisicao.Senha) ||
+                    requisicao.Login != loginTeste || requisicao.Senha != senhaTeste) //se nao veio requisição, login ou senha
                 {
                     //o usuario passou algo errado
                     return BadRequest(new ErroRespostaDto()
@@ -35,7 +41,11 @@ namespace GerenciadorDeTarefas.Controllers
                     }); 
                 }
 
-                return Ok("Usuário autenticado com sucesso!");
+                return Ok(new LoginRespostaDto() {
+                    Email = loginTeste,
+                    Nome = "Usuário de Teste",
+                    Token = ""
+                });
             }
             catch(Exception e)
             {
