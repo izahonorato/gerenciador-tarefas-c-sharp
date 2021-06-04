@@ -1,4 +1,6 @@
 ﻿using GerenciadorDeTarefas.Dtos;
+using GerenciadorDeTarefas.Models;
+using GerenciadorDeTarefas.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -41,10 +43,20 @@ namespace GerenciadorDeTarefas.Controllers
                     }); 
                 }
 
-                return Ok(new LoginRespostaDto() {
+                var usuarioTeste = new Usuario()
+                {
+                    Id = 1,
+                    Nome = "Usuário de teste",
                     Email = loginTeste,
-                    Nome = "Usuário de Teste",
-                    Token = ""
+                    Senha = senhaTeste
+                };
+
+                var token = TokenService.CriarToken(usuarioTeste);
+
+                return Ok(new LoginRespostaDto() {
+                    Email = usuarioTeste.Email,
+                    Nome = usuarioTeste.Nome,
+                    Token = token
                 });
             }
             catch(Exception e)
