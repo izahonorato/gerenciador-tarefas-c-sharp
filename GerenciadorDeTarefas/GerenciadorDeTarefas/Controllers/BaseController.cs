@@ -10,5 +10,11 @@ namespace GerenciadorDeTarefas.Controllers
     [Authorize]
     public class BaseController : ControllerBase
     {
+        //protected readonly IUsuarioRepository _usuarioRepository;
+
+        //public BaseController(IUsuarioRepository usuarioRepository)
+        //{
+        //    this._usuarioRepository = usuarioRepository;
+       // }
     }
 }

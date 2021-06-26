@@ -17,12 +17,13 @@ namespace GerenciadorDeTarefas.Controllers
     public class UsuarioController : BaseController
     {
         private readonly ILogger<UsuarioController> _logger;
-        public UsuarioController(ILogger<UsuarioController> logger)
+
+        public UsuarioController(ILogger<UsuarioController> logger)//, IUsuarioRepository usuarioRepository) : base(usuarioRepository)
         {
             _logger = logger;
         }
 
-        [HttpPost]
+        [HttpGet]
         [AllowAnonymous]
         public IActionResult SalvarUsuario([FromBody]Usuario usuario)
         {
