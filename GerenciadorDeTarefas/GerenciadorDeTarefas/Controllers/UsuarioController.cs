@@ -1,5 +1,6 @@
 ﻿using GerenciadorDeTarefas.Dtos;
 using GerenciadorDeTarefas.Models;
+using GerenciadorDeTarefas.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,10 +18,13 @@ namespace GerenciadorDeTarefas.Controllers
     public class UsuarioController : BaseController
     {
         private readonly ILogger<UsuarioController> _logger;
+        private readonly IUsuarioRepository  _UsuarioRepository;
 
-        public UsuarioController(ILogger<UsuarioController> logger)//, IUsuarioRepository usuarioRepository) : base(usuarioRepository)
+        public UsuarioController(ILogger<UsuarioController> logger,
+            IUsuarioRepository UsuarioRepository)
         {
             _logger = logger;
+            _UsuarioRepository = UsuarioRepository;
         }
 
         [HttpPost]
@@ -59,7 +63,9 @@ namespace GerenciadorDeTarefas.Controllers
                     });
                 }
 
-                return Ok(usuario);
+                _UsuarioRepository.Salvar(usuario);
+
+                return Ok(new { msg = "Usuário criado com sucesso!" });
 
             }
             catch(Exception e)
