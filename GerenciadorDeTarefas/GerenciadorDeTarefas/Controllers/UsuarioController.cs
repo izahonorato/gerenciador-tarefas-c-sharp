@@ -23,7 +23,7 @@ namespace GerenciadorDeTarefas.Controllers
             _logger = logger;
         }
 
-        [HttpGet]
+        [HttpPost]
         [AllowAnonymous]
         public IActionResult SalvarUsuario([FromBody]Usuario usuario)
         {
@@ -43,7 +43,7 @@ namespace GerenciadorDeTarefas.Controllers
                     erros.Add("Senha inválida");
                 }
 
-                Regex regex = new Regex(@"^([\w\.\-\+\d]+)@([\w\-]+)((\.(\w){2,3})+)$");
+                Regex regex = new Regex(@"^([\w\.\-\+\d]+)@([\w\-]+)((\.(\w){2,4})+)$");
                 if (string.IsNullOrWhiteSpace(usuario.Email) || string.IsNullOrEmpty(usuario.Email)
                     || !regex.Match(usuario.Email).Success)
                 {
