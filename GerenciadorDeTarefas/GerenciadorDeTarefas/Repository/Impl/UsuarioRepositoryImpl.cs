@@ -13,6 +13,17 @@ namespace GerenciadorDeTarefas.Repository.Impl
         {
             _context = context;
         }
+
+        public bool ExisteUsuarioPeloEmail(string email)
+        {
+            return _context.Usuario.Any(usuario => usuario.Email.ToLower() == email.ToLower());
+        }
+
+        public Usuario GetUsuarioByLoginSenha(string login, string senha)
+        {
+            return _context.Usuario.FirstOrDefault(usuario => usuario.Email == login.ToLower() && usuario.Senha == senha);
+        }
+
         public void Salvar(Usuario usuario)
         {
             _context.Usuario.Add(usuario);

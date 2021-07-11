@@ -1,6 +1,8 @@
 ﻿using GerenciadorDeTarefas.Dtos;
 using GerenciadorDeTarefas.Models;
+using GerenciadorDeTarefas.Repository;
 using GerenciadorDeTarefas.Services;
+using GerenciadorDeTarefas.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,13 +19,12 @@ namespace GerenciadorDeTarefas.Controllers
     public class LoginController : BaseController
     {
         private readonly ILogger<LoginController> _logger;
+        private readonly IUsuarioRepository _UsuarioRepository;
 
-        private readonly string loginTeste = "admin@admin.com";
-        private readonly string senhaTeste = "admin1234@";
-
-        public LoginController(ILogger<LoginController> logger)
+        public LoginController(ILogger<LoginController> logger, IUsuarioRepository usuarioRepository)
         {
             _logger = logger;
+            _UsuarioRepository = usuarioRepository;
         }
 
         [HttpPost]
@@ -34,8 +35,7 @@ namespace GerenciadorDeTarefas.Controllers
             {
                 if(requisicao == null || requisicao.Login == null || requisicao.Senha == null || 
                     string.IsNullOrEmpty(requisicao.Login) || string.IsNullOrWhiteSpace(requisicao.Login) ||
-                    string.IsNullOrEmpty(requisicao.Senha) || string.IsNullOrWhiteSpace(requisicao.Senha) ||
-                    requisicao.Login != loginTeste || requisicao.Senha != senhaTeste) //se nao veio requisição, login ou senha
+                    string.IsNullOrEmpty(requisicao.Senha) || string.IsNullOrWhiteSpace(requisicao.Senha)) //se nao veio requisição, login ou senha
                 {
                     //o usuario passou algo errado
                     return BadRequest(new ErroRespostaDto()
@@ -45,19 +45,22 @@ namespace GerenciadorDeTarefas.Controllers
                     }); 
                 }
 
-                var usuarioTeste = new Usuario()
-                {
-                    Id = 1,
-                    Nome = "Usuário de teste",
-                    Email = loginTeste,
-                    Senha = senhaTeste
-                };
+                var usuario = _UsuarioRepository.GetUsuarioByLoginSenha(requisicao.Login, MD5Utils.GerarHashMD5(requisicao.Senha));
 
-                var token = TokenService.CriarToken(usuarioTeste);
+                if(usuario == null)
+                {
+                    return BadRequest(new ErroRespostaDto()
+                    {
+                        Status = StatusCodes.Status400BadRequest,
+                        Erro = "Usuário ou senha inválidos!"
+                    });
+                }
+
+                var token = TokenService.CriarToken(usuario);
 
                 return Ok(new LoginRespostaDto() {
-                    Email = usuarioTeste.Email,
-                    Nome = usuarioTeste.Nome,
+                    Email = usuario.Email,
+                    Nome = usuario.Nome,
                     Token = token
                 });
             }
