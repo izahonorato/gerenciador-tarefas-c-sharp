@@ -1,4 +1,5 @@
 ﻿using GerenciadorDeTarefas.Dtos;
+using GerenciadorDeTarefas.Enums;
 using GerenciadorDeTarefas.Models;
 using GerenciadorDeTarefas.Repository;
 using Microsoft.AspNetCore.Http;
@@ -31,25 +32,25 @@ namespace GerenciadorDeTarefas.Controllers
             {
                 var usuario = ReadToken();
                 var erros = new List<string>();
-                if(tarefa == null || usuario == null)
+                if (tarefa == null || usuario == null)
                 {
                     erros.Add("Favor informar a tarefa ou usuário");
                 }
                 else
                 {
-                    if(string.IsNullOrEmpty(tarefa.Nome) || string.IsNullOrWhiteSpace(tarefa.Nome)
+                    if (string.IsNullOrEmpty(tarefa.Nome) || string.IsNullOrWhiteSpace(tarefa.Nome)
                         || tarefa.Nome.Count() < 4)
                     {
                         erros.Add("Favor informar um nome válido");
                     }
 
-                    if(tarefa.DataPrevistaConclusao == DateTime.MinValue || tarefa.DataPrevistaConclusao.Date < DateTime.Now.Date)
+                    if (tarefa.DataPrevistaConclusao == DateTime.MinValue || tarefa.DataPrevistaConclusao.Date < DateTime.Now.Date)
                     {
                         erros.Add("Data de previsão não pode ser menor que a data de hoje!");
                     }
                 }
 
-                if(erros.Count > 0)
+                if (erros.Count > 0)
                 {
                     return BadRequest(new ErroRespostaDto()
                     {
@@ -80,7 +81,7 @@ namespace GerenciadorDeTarefas.Controllers
             try
             {
                 var usuario = ReadToken();
-                if(usuario == null || idTarefa <= 0)
+                if (usuario == null || idTarefa <= 0)
                 {
                     return BadRequest(new ErroRespostaDto()
                     {
@@ -91,8 +92,8 @@ namespace GerenciadorDeTarefas.Controllers
 
                 var tarefa = _tarefaRepository.GetById(idTarefa);
 
-                if(tarefa == null|| tarefa.IdUsuario != usuario.Id)
-                    {
+                if (tarefa == null || tarefa.IdUsuario != usuario.Id)
+                {
                     return BadRequest(new ErroRespostaDto()
                     {
                         Status = StatusCodes.Status400BadRequest,
@@ -110,6 +111,115 @@ namespace GerenciadorDeTarefas.Controllers
                 {
                     Status = StatusCodes.Status500InternalServerError,
                     Erro = "Ocorreu um erro ao deletar tarefa, tente novamente!"
+                });
+            }
+        }
+
+        [HttpPut("{idTarefa}")]
+        public IActionResult AtualizarTarefa([FromBody] Tarefa model, int idTarefa)
+        {
+            try
+            {
+                var usuario = ReadToken();
+                if (usuario == null || idTarefa <= 0)
+                {
+                    return BadRequest(new ErroRespostaDto()
+                    {
+                        Status = StatusCodes.Status400BadRequest,
+                        Erro = "usuário ou tarefa inválidos"
+                    });
+                }
+
+                var tarefa = _tarefaRepository.GetById(idTarefa);
+
+                if (tarefa == null || tarefa.IdUsuario != usuario.Id)
+                {
+                    return BadRequest(new ErroRespostaDto()
+                    {
+                        Status = StatusCodes.Status400BadRequest,
+                        Erro = "tarefa não encontrada"
+                    });
+                }
+
+                var erros = new List<string>();
+                if (model == null)
+                {
+                    erros.Add("Favor informar a tarefa ou usuário");
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(model.Nome) && !string.IsNullOrWhiteSpace(model.Nome)
+                        && model.Nome.Count() < 4)
+                    {
+                        erros.Add("Favor informar um nome válido");
+                    }
+
+                }
+
+                if (erros.Count > 0)
+                {
+                    return BadRequest(new ErroRespostaDto()
+                    {
+                        Status = StatusCodes.Status400BadRequest,
+                        Erros = erros
+                    });
+                }
+
+                if(!string.IsNullOrEmpty(model.Nome) && !string.IsNullOrWhiteSpace(model.Nome))
+                {
+                    tarefa.Nome = model.Nome;
+                }
+
+                if(model.DataPrevistaConclusao != DateTime.MinValue)
+                {
+                    tarefa.DataPrevistaConclusao = model.DataPrevistaConclusao;
+                }
+
+                if(model.DataConclusao != null && model.DataConclusao != DateTime.MinValue)
+                {
+                    tarefa.DataConclusao = model.DataConclusao;
+                }
+
+                _tarefaRepository.AtualizarTarefa(tarefa);
+                return Ok(new { msg = "Tarefa atualizada com sucesso!" });
+
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("Ocorreu erro ao atualizar tarefa", e);
+                return StatusCode(StatusCodes.Status500InternalServerError, new ErroRespostaDto()
+                {
+                    Status = StatusCodes.Status500InternalServerError,
+                    Erro = "Ocorreu um erro ao atualizar tarefa, tente novamente!"
+                });
+            }
+        }
+
+    [HttpGet]
+    public IActionResult ListarTarefasUsuario(DateTime? periodoDe, DateTime? periodoAte, StatusTarefaEnum status)
+        {
+            try
+            {
+                var usuario = ReadToken();
+                if(usuario == null)
+                {
+                    return BadRequest(new ErroRespostaDto
+                    {
+                        Status = StatusCodes.Status400BadRequest,
+                        Erro = "Usuário não informado"
+                    });
+                }
+
+                var resultado = _tarefaRepository.BuscarTarefas(usuario.Id, periodoDe, periodoAte, status);
+                return Ok(resultado);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("Ocorreu erro ao listar tarefas", e);
+                return StatusCode(StatusCodes.Status500InternalServerError, new ErroRespostaDto()
+                {
+                    Status = StatusCodes.Status500InternalServerError,
+                    Erro = "Ocorreu um erro ao listar tarefas, tente novamente!"
                 });
             }
         }

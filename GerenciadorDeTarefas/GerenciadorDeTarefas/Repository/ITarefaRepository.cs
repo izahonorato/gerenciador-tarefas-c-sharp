@@ -1,4 +1,5 @@
-﻿using GerenciadorDeTarefas.Models;
+﻿using GerenciadorDeTarefas.Enums;
+using GerenciadorDeTarefas.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,8 +9,10 @@ namespace GerenciadorDeTarefas.Repository
 {
     public interface ITarefaRepository
     {
-        public void AdicionarTarefa(Tarefa tarefa);
+        void AdicionarTarefa(Tarefa tarefa);
         Tarefa GetById(int idTarefa);
         void RemoverTarefa(Tarefa tarefa);
+        void AtualizarTarefa(Tarefa tarefa);
+        List<Tarefa> BuscarTarefas(int idUsuario, DateTime? periodoDe, DateTime? periodoAte, StatusTarefaEnum status);
     }
 }

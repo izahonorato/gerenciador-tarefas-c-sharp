@@ -1,4 +1,5 @@
-﻿using GerenciadorDeTarefas.Models;
+﻿using GerenciadorDeTarefas.Enums;
+using GerenciadorDeTarefas.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +20,23 @@ namespace GerenciadorDeTarefas.Repository.Impl
         {
             _context.Tarefa.Add(tarefa);
             _context.SaveChanges();
+        }
+
+        public void AtualizarTarefa(Tarefa tarefa)
+        {
+            _context.Entry(tarefa).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+            _context.SaveChanges();
+            _context.Entry(tarefa).State = Microsoft.EntityFrameworkCore.EntityState.Detached;
+        }
+
+        public List<Tarefa> BuscarTarefas(int idUsuario, DateTime? periodoDe, DateTime? periodoAte, StatusTarefaEnum status)
+        {
+            return _context.Tarefa.Where(tarefa => tarefa.IdUsuario == idUsuario
+            && (periodoDe == null || periodoDe == DateTime.MinValue || tarefa.DataPrevistaConclusao > ((DateTime)periodoDe).Date)
+            && (periodoAte == null || periodoAte == DateTime.MinValue || tarefa.DataPrevistaConclusao <= ((DateTime)periodoAte).Date)
+            && (status == StatusTarefaEnum.Todos || (status == StatusTarefaEnum.Ativos && tarefa.DataConclusao == null)
+            || (status == StatusTarefaEnum.Concluídos && tarefa.DataConclusao != null))
+            ).ToList();
         }
 
         public Tarefa GetById(int idTarefa)
